@@ -139,46 +139,46 @@ function extractContractFields(userInput) {
 
     fetch('/extract-fields', {
         method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_input: userInput })
     })
     .then(response => response.json())
     .then(data => {
-    console.log("[DEBUG] 서버 응답:", data);
-    if (data.extracted_fields) {
-        try {
-            const extracted = JSON.parse(data.extracted_fields);
-            localStorage.setItem('extracted_fields', JSON.stringify(extracted));
-            
-            // 추출된 필드를 보기 좋게 표시
-            const resultMessage = Object.entries(extracted)
-                .map(([key, value]) => {
-                    const displayValue = typeof value === 'object' 
-                        ? JSON.stringify(value) 
-                        : value;
-                    return `- ${key}: ${displayValue}`;
-                })
-                .join('\n');
-            
-            appendMessage("다음과 같은 항목이 추출되었습니다:\n\n" + resultMessage, 'bot');
-            updateContract(extracted);
-        } catch (error) {
-            console.error('JSON 파싱 오류:', error);
-            appendMessage("응답 데이터 파싱에 실패했습니다.", 'bot');
-            return;
+        console.log("[DEBUG] 서버 응답:", data);
+
+        if (data.extracted_fields) {
+            let extracted;
+            try {
+                extracted = JSON.parse(data.extracted_fields);
+
+                // 추출된 필드 데이터 저장
+                localStorage.setItem('extracted_fields', JSON.stringify(extracted));
+
+                let resultMessage = "다음과 같은 항목이 추출되었습니다:\n\n";
+                for (const [key, value] of Object.entries(extracted)) {
+                    if (typeof value === 'object') {
+                        resultMessage += `- ${key}: ${JSON.stringify(value)}\n`;
+                    } else {
+                        resultMessage += `- ${key}: ${value}\n`;
+                    }
+                }
+                appendMessage(resultMessage, 'bot');
+
+                // 추출된 데이터로 계약서 업데이트
+                updateContract(extracted);
+            } catch (error) {
+                console.error("[ERROR] JSON 파싱 실패:", error);
+                appendMessage("응답 데이터 파싱에 실패했습니다.", 'bot');
+            }
+        } else if (data.error) {
+            appendMessage("서버 오류: " + data.error, 'bot');
+        } else {
+            appendMessage("항목 추출에 실패했습니다. 다시 시도해 주세요.", 'bot');
         }
-    } else if (data.error) {
-        appendMessage("서버 오류: " + data.error, 'bot');
-    } else {
-        appendMessage("항목 추출에 실패했습니다. 다시 시도해 주세요.", 'bot');
-    }
-})
-.catch(error => {
-    console.error('요청 실패:', error);
-    appendMessage("서버 오류가 발생했습니다. 다시 시도해 주세요.", 'bot');
+    })
+    .catch((error) => {
+        console.error("[ERROR] 요청 실패:", error);
+        appendMessage("서버 오류가 발생했습니다. 다시 시도해 주세요.", 'bot');
     });
 }
 
