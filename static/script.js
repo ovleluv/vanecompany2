@@ -145,28 +145,23 @@ function extractContractFields(userInput) {
     .then(response => response.json())
     .then(data => {
         console.log("[DEBUG] 서버 응답:", data);
-
         if (data.extracted_fields) {
-            let extracted;
-            try {
-                extracted = JSON.parse(data.extracted_fields);
-
-                // 추출된 필드 데이터 저장
-                localStorage.setItem('extracted_fields', JSON.stringify(extracted));
-
-                let resultMessage = "다음과 같은 항목이 추출되었습니다:\n\n";
-                for (const [key, value] of Object.entries(extracted)) {
-                    if (typeof value === 'object') {
-                        resultMessage += `- ${key}: ${JSON.stringify(value)}\n`;
-                    } else {
-                        resultMessage += `- ${key}: ${value}\n`;
-                    }
+            const extracted = data.extracted_fields; // 직접 사용
+            localStorage.setItem('extracted_fields', JSON.stringify(extracted));
+            
+            let resultMessage = "다음과 같은 항목이 추출되었습니다:\n\n";
+            for (const [key, value] of Object.entries(extracted)) {
+                if (typeof value === 'object') {
+                    resultMessage += `- ${key}: ${JSON.stringify(value)}\n`;
+                } else {
+                    resultMessage += `- ${key}: ${value}\n`;
                 }
-                appendMessage(resultMessage, 'bot');
-
-                // 추출된 데이터로 계약서 업데이트
-                updateContract(extracted);
-            } catch (error) {
+            }
+            appendMessage(resultMessage, 'bot');
+            updateContract(extracted);
+        }
+        
+        catch (error) {
                 console.error("[ERROR] JSON 파싱 실패:", error);
                 appendMessage("응답 데이터 파싱에 실패했습니다.", 'bot');
             }
