@@ -147,9 +147,7 @@ function extractContractFields(userInput) {
         console.log("[DEBUG] 서버 응답:", data);
 
         if (data.extracted_fields) {
-            let extracted;
-            try {
-                extracted = JSON.parse(data.extracted_fields);
+            let extracted = data.extracted_fields; // 이미 객체 형태
 
                 // 추출된 필드 데이터 저장
                 localStorage.setItem('extracted_fields', JSON.stringify(extracted));
