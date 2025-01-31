@@ -164,15 +164,11 @@ function extractContractFields(userInput) {
 
                 // 추출된 데이터로 계약서 업데이트
                 updateContract(extracted);
-            } catch (error) {
-                console.error("[ERROR] JSON 파싱 실패:", error);
-                appendMessage("응답 데이터 파싱에 실패했습니다.", 'bot');
+            } else if (data.error) {
+                appendMessage("서버 오류: " + data.error, 'bot');
+            } else {
+                appendMessage("항목 추출에 실패했습니다. 다시 시도해 주세요.", 'bot');
             }
-        } else if (data.error) {
-            appendMessage("서버 오류: " + data.error, 'bot');
-        } else {
-            appendMessage("항목 추출에 실패했습니다. 다시 시도해 주세요.", 'bot');
-        }
     })
     .catch((error) => {
         console.error("[ERROR] 요청 실패:", error);
