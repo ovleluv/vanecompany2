@@ -177,34 +177,35 @@ def get_input_fields():
 
 @app.route('/extract-fields', methods=['POST'])
 def extract_fields():
-    try:
-        data = request.get_json()
-        user_input = data.get('user_input')
+    data = request.get_json()
+    user_input = data.get('user_input')
 
+    prompt = (
+        "다음 문장에서 계약서에 포함되어야 할 항목을 JSON 형태로 반환해 주세요:\n"
+        f"문장: {user_input}"
+    )
+
+    try:
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"다음 문장에서 계약서에 포함되어야 할 항목을 JSON 형태로 반환해 주세요:\n{user_input}"}
+                {"role": "user", "content": prompt}
             ],
             max_tokens=500,
             temperature=0.7
         )
-        
-        # JSON 문자열을 파싱하여 객체로 변환
-        content = response.choices[0].message.content.strip()
-        json_match = re.search(r'\{.*\}', content, re.DOTALL)
-        
-        if not json_match:
+        extracted_data = response.choices[0].message.content.strip()
+        json_match = re.search(r'\{.*\}', extracted_data, re.DOTALL)
+
+        if json_match:
+            json_data = json.loads(json_match.group())
+            return jsonify({"extracted_fields": json_data})
+        else:
             return jsonify({"error": "JSON 데이터를 추출하지 못했습니다."})
-            
-        extracted_data = json.loads(json_match.group())
-        return jsonify({"extracted_fields": extracted_data})
-        
-    except json.JSONDecodeError:
-        return jsonify({"error": "JSON 파싱 오류가 발생했습니다."})
+
     except Exception as e:
-        return jsonify({"error": f"서버 오류: {str(e)}"})
+        return jsonify({"error": str(e)})
 
 @app.route('/download', methods=['GET'])
 def download_contract():
