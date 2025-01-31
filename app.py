@@ -196,14 +196,12 @@ def extract_fields():
             temperature=0.7
         )
         extracted_data = response.choices[0].message.content.strip()
-        json_match = re.search(r'\{.*\}', extracted_data, re.DOTALL)
+        json_data = json.loads(extracted_data)
 
-        if json_match:
-            json_data = json.loads(json_match.group())
-            return jsonify({"extracted_fields": json_data})
-        else:
-            return jsonify({"error": "JSON 데이터를 추출하지 못했습니다."})
+        return jsonify({"extracted_fields": json_data})
 
+    except json.JSONDecodeError:
+        return jsonify({"error": "유효한 JSON 형식이 아닙니다."})
     except Exception as e:
         return jsonify({"error": str(e)})
 
