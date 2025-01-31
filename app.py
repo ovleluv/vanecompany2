@@ -9,6 +9,9 @@ from docx import Document
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 
+app.config['JSON_AS_ASCII'] = False
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
 # 환경 변수에서 API 키 로드
 api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -22,6 +25,10 @@ contract_types = {
     "2": "위임장",
     "3": "소장"
 }
+
+@app.errorhandler(400)
+def handle_bad_request(e):
+    return jsonify(error=str(e)), 400
 
 @app.route('/')
 def serve():
