@@ -182,6 +182,7 @@ def extract_fields():
 
     prompt = (
         "다음 문장에서 계약서에 포함되어야 할 항목을 JSON 형태로 반환해 주세요:\n"
+        "반드시 유효한 JSON 형식으로 출력해야 합니다. JSON 외의 추가적인 텍스트를 포함하지 마세요."
         f"문장: {user_input}"
     )
 
