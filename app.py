@@ -196,12 +196,17 @@ def extract_fields():
             temperature=0.7
         )
         extracted_data = response.choices[0].message.content.strip()
-        json_data = json.loads(extracted_data)
-
-        return jsonify({"extracted_fields": json_data})
+        # JSON 형태의 데이터만 추출
+        json_match = re.search(r'\{.*\}', extracted_data, re.DOTALL)
+        
+        if json_match:
+            json_data = json.loads(json_match.group())  # JSON 변환
+            return jsonify({"extracted_fields": json_data})
+        else:
+            return jsonify({"error": "응답에서 유효한 JSON 데이터를 찾을 수 없습니다.", "raw_response": extracted_data})
 
     except json.JSONDecodeError:
-        return jsonify({"error": "유효한 JSON 형식이 아닙니다."})
+        return jsonify({"error": "OpenAI 응답이 유효한 JSON 형식이 아닙니다."})
     except Exception as e:
         return jsonify({"error": str(e)})
 
